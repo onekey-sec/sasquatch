@@ -716,7 +716,9 @@ int read_super_4(squashfs_operations **s_ops)
 		/*
 		 * Check the compression type
 		 */
-		comp = lookup_compressor_id(sBlk.s.compression);
+		if(!comp) {
+			comp = lookup_compressor_id(sBlk.s.compression);
+		}
 		return TRUE;
 	}
 

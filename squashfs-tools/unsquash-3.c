@@ -755,7 +755,9 @@ int read_super_3(char *source, squashfs_operations **s_ops, void *s)
 	/*
 	 * 3.x filesystems use gzip compression.
 	 */
-	comp = lookup_compressor("gzip");
+	if(!comp) {
+		comp = lookup_compressor("gzip");
+	}
 	return TRUE;
 }
 
