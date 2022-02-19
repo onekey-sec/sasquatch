@@ -232,7 +232,7 @@ $(error "COMP_DEFAULT is set to ${COMP_DEFAULT}, which  isn't selected to be \
 endif
 
 .PHONY: all
-all: mksquashfs unsquashfs
+all: sasquatch
 
 # CJH: Added LZMA_EXTRA_OBJS
 mksquashfs: $(MKSQUASHFS_OBJS)
@@ -291,6 +291,9 @@ xz_wrapper.o: xz_wrapper.c squashfs_fs.h xz_wrapper.h compressor.h
 unsquashfs: $(UNSQUASHFS_OBJS)
 	$(CC) $(LDFLAGS) $(EXTRA_LDFLAGS) $(UNSQUASHFS_OBJS) $(LZMA_EXTRA_OBJS) $(LIBS) -o $@
 
+sasquatch: $(UNSQUASHFS_OBJS)
+	$(CXX) $(LDFLAGS) $(EXTRA_LDFLAGS) $(LZMA_EXTRA_OBJS) $(UNSQUASHFS_OBJS) $(LIBS) -o $@
+
 unsquashfs.o: unsquashfs.h unsquashfs.c squashfs_fs.h squashfs_swap.h \
 	squashfs_compat.h xattr.h read_fs.h compressor.h
 
@@ -317,12 +320,12 @@ lzmadaptive:
 # CJH: Added lzmalt, lzmadaptive
 .PHONY: clean
 clean:
-	-rm -f *.o mksquashfs unsquashfs
+	-rm -f *.o $(LZMA_OBJS) mksquashfs unsquashfs sasquatch
 	make -C $(LZMA_ADAPT_DIR) clean
 	make -C $(LZMA_ALT_DIR) clean
 
+# CJH: Added cp sasquatch
 .PHONY: install
-install: mksquashfs unsquashfs
+install: sasquatch
 	mkdir -p $(INSTALL_DIR)
-	cp mksquashfs $(INSTALL_DIR)
-	cp unsquashfs $(INSTALL_DIR)
+	cp sasquatch $(INSTALL_DIR)
