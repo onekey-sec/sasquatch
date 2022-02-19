@@ -1136,7 +1136,7 @@ HRESULT CEncoder::GetOptimumFast(UInt32 position, UInt32 &backRes, UInt32 &lenRe
   if (repLens[repMaxIndex] >= 2)
   {
     if (repLens[repMaxIndex] + 1 >= lenMain || 
-        repLens[repMaxIndex] + 2 >= lenMain && (backMain > (1<<12)))
+        (repLens[repMaxIndex] + 2 >= lenMain && (backMain > (1<<12))))
     {
       backRes = repMaxIndex;
       lenRes = repLens[repMaxIndex];
@@ -1151,11 +1151,11 @@ HRESULT CEncoder::GetOptimumFast(UInt32 position, UInt32 &backRes, UInt32 &lenRe
     if (_longestMatchLength >= 2 &&
       (
         (_longestMatchLength >= lenMain && _matchDistances[lenMain] < backMain) || 
-          _longestMatchLength == lenMain + 1 && 
-          !ChangePair(backMain, _matchDistances[_longestMatchLength]) ||
-        _longestMatchLength > lenMain + 1 ||
-        _longestMatchLength + 1 >= lenMain && lenMain >= 3 &&
-          ChangePair(_matchDistances[lenMain - 1], backMain)
+        ((_longestMatchLength == lenMain + 1) && 
+          !ChangePair(backMain, _matchDistances[_longestMatchLength])) ||
+        (_longestMatchLength > lenMain + 1) ||
+        ((_longestMatchLength + 1 >= lenMain) && lenMain >= 3 &&
+          ChangePair(_matchDistances[lenMain - 1], backMain))
       )
       )
     {
