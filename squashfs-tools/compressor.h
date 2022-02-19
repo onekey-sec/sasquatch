@@ -60,11 +60,7 @@ static inline int compressor_compress(struct compressor *comp, void *strm,
 }
 
 
-static inline int compressor_uncompress(struct compressor *comp, void *dest,
-	void *src, int size, int block_size, int *error)
-{
-	return comp->uncompress(dest, src, size, block_size, error);
-}
+int compressor_uncompress(struct compressor *comp, void *dest, void *src, int size, int block_size, int *error);
 
 
 /*
