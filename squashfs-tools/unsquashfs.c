@@ -45,7 +45,7 @@ pthread_t *thread, *inflator_thread;
 pthread_mutex_t	fragment_mutex;
 
 /* user options that control parallelisation */
-int processors = -1;
+int processors = 1;
 
 struct super_block sBlk;
 squashfs_operations s_ops;
