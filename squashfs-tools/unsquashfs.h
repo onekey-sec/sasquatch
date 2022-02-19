@@ -250,6 +250,7 @@ struct directory_stack {
 #define MAX_FOLLOW_SYMLINKS 256
 
 /* globals */
+extern struct override_table override;
 extern struct super_block sBlk;
 extern int swap;
 extern struct hash_table_entry *directory_table_hash[65536];
