@@ -699,7 +699,6 @@ int read_super_4(squashfs_operations **s_ops)
 	if(res == FALSE)
 		return res;
 
-	swap = sBlk_4.s_magic != SQUASHFS_MAGIC;
 	SQUASHFS_INSWAP_SUPER_BLOCK(&sBlk_4);
 
 	if(sBlk_4.s_magic == SQUASHFS_MAGIC && sBlk_4.s_major == 4 &&
