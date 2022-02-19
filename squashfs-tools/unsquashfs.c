@@ -51,8 +51,9 @@ static long long start_offset = 0;
 int processors = 1;
 
 struct super_block sBlk;
+
 squashfs_operations *s_ops;
-struct compressor *comp;
+struct compressor *comp = NULL;
 
 struct override_table override = { 0 };
 int bytes = 0, swap = -1, file_count = 0, dir_count = 0, sym_count = 0,
@@ -3886,6 +3887,22 @@ static void print_options(FILE *stream, char *name)
 	fprintf(stream, "wildcard\n\t\t\t\texpansion (globbing)\n");
 	fprintf(stream, "\t-L\t\t\tsynonym for -follow-symlinks\n");
 	fprintf(stream, "\t-h[elp]\t\t\toutput this options text to stdout\n");
+	// CJH: Added -comp, -be, -le, -major, -minor and lzma options help output
+	fprintf(stream, "\n");
+	fprintf(stream, "\t-lc <value>\t\tSet the lzma-adaptive lc parameter [0-4]\n");
+	fprintf(stream, "\t-lp <value>\t\tSet the lzma-adaptive lp parameter [0-4]\n");
+	fprintf(stream, "\t-pb <value>\t\tSet the lzma-adaptive pb parameter [0-8]\n");
+	fprintf(stream, "\t-dict <value>\t\tSet the lzma-adaptive dictionary size\n");
+	fprintf(stream, "\t-lzma-offset <value>\tSet the lzma-adaptive LZMA data offset\n");
+	fprintf(stream, "\t-major <version>\tManually set the SquashFS major "
+		"version number\n");
+	fprintf(stream, "\t-minor <version>\tManually set the SquashFS minor "
+		"version number\n");
+	fprintf(stream, "\t-be\t\t\tTreat the filesystem as big endian\n");
+	fprintf(stream, "\t-le\t\t\tTreat the filesystem as little endian\n");
+	fprintf(stream, "\t-c[omp] <decompressor>\tSpecify the "
+		"decompressor to use\n");
+
 	fprintf(stream, "\nDecompressors available:\n");
 	display_compressors(stream, "", "");
 
@@ -4252,6 +4269,81 @@ int parse_options(int argc, char *argv[])
 							argv[0], argv[i - 1]);
 				exit(1);
 			}
+        // CJH: Added -comp, -be, -le, -major, -minor options
+        else if(strcmp(argv[i], "-c") == 0 ||
+                strcmp(argv[i], "-comp") == 0) {
+            if(++i == argc) {
+                fprintf(stderr, "%s: -comp missing compression option\n",
+                    argv[0]);
+                exit(1);
+            }
+            comp = lookup_compressor(argv[i]);
+        } else if(strcmp(argv[i], "-major") == 0) {
+            if(++i == argc) {
+                fprintf(stderr, "%s: -major missing version option\n",
+                    argv[0]);
+                exit(1);
+            }
+            override.s_major = atoi(argv[i]);
+        } else if(strcmp(argv[i], "-minor") == 0) {
+            if(++i == argc) {
+                fprintf(stderr, "%s: -minor missing version option\n",
+                    argv[0]);
+                exit(1);
+            }
+            override.s_minor = atoi(argv[i]);
+        } else if(strcmp(argv[i], "-lc") == 0) {
+            if(++i == argc) {
+                fprintf(stderr, "%s: -lc missing value option\n",
+                    argv[0]);
+                exit(1);
+            }
+            override.lc.value = atoi(argv[i]);
+            override.lc.set = TRUE;
+        } else if(strcmp(argv[i], "-lp") == 0) {
+            if(++i == argc) {
+                fprintf(stderr, "%s: -lp missing value option\n",
+                    argv[0]);
+                exit(1);
+            }
+            override.lp.value = atoi(argv[i]);
+            override.lp.set = TRUE;
+        } else if(strcmp(argv[i], "-pb") == 0) {
+            if(++i == argc) {
+                fprintf(stderr, "%s: -pb missing value option\n",
+                    argv[0]);
+                exit(1);
+            }
+            override.pb.value = atoi(argv[i]);
+            override.pb.set = TRUE;
+        } else if(strcmp(argv[i], "-dict") == 0) {
+            if(++i == argc) {
+                fprintf(stderr, "%s: -dict missing value option\n",
+                    argv[0]);
+                exit(1);
+            }
+            override.dictionary_size.value = atoi(argv[i]);
+            override.dictionary_size.set = TRUE;
+        } else if(strcmp(argv[i], "-lzma-offset") == 0) {
+            if(++i == argc) {
+                fprintf(stderr, "%s: -lzma-offset missing value option\n",
+                    argv[0]);
+                exit(1);
+            }
+            override.offset.value = atoi(argv[i]);
+            override.offset.set = TRUE;
+        } else if(strcmp(argv[i], "-be") == 0)
+#if __BYTE_ORDER == __BIG_ENDIAN
+            swap = 0;
+#else
+            swap = 1;
+#endif
+        else if(strcmp(argv[i], "-le") == 0)
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+            swap = 0;
+#else
+            swap = 1;
+#endif
 		} else {
 			print_options(stderr, argv[0]);
 			exit(1);
