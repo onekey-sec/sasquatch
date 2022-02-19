@@ -702,8 +702,6 @@ int read_block(int fd, long long start, long long *next, int expected,
 			outlen, &error);
 
 		if(res == -1) {
-			ERROR("%s uncompress failed with error code %d\n",
-				comp->name, error);
 			goto failed;
 		}
 	} else {
@@ -721,7 +719,10 @@ int read_block(int fd, long long start, long long *next, int expected,
 	 * is of the expected size
 	 */
 	if(expected && expected != res)
+    {
+        ERROR("Decompressed size did not match the expected size! [%d != %d]\n", res, expected);
 		return FALSE;
+    }
 	else
 		return res;
 
@@ -2202,9 +2203,8 @@ int check_compression(struct compressor *comp)
 	if(!comp->supported) {
 		ERROR("Filesystem uses %s compression, this is "
 			"unsupported by this version\n", comp->name);
-		ERROR("Decompressors available:\n");
-		display_compressors(stderr, "", "");
-		return FALSE;
+        // CJH: Try to continue anyway
+        return TRUE;
 	}
 
 	/*
@@ -2617,11 +2617,9 @@ void *inflator(void *arg)
 			SQUASHFS_COMPRESSED_SIZE_BLOCK(entry->size), block_size,
 			&error);
 
-		if(res == -1)
-			ERROR("%s uncompress failed with error code %d\n",
-				comp->name, error);
-		else
-			memcpy(entry->data, tmp, res);
+        if(res != -1) {
+            memcpy(entry->data, tmp, res);
+		}
 
 		/*
 		 * block has been either successfully decompressed, or an error

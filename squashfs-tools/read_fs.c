@@ -78,8 +78,6 @@ int read_block(int fd, long long start, long long *next, int expected,
 		res = compressor_uncompress(comp, block, buffer, c_byte,
 			outlen, &error);
 		if(res == -1) {
-			ERROR("%s uncompress failed with error code %d\n",
-				comp->name, error);
 			return 0;
 		}
 	} else {
