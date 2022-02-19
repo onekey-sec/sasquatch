@@ -99,13 +99,18 @@ static int lzma_standard_uncompress(void *dest, void *src, int size, int outsize
 		(s[LZMA_PROPS_SIZE + 2] << 16) |
 		(s[LZMA_PROPS_SIZE + 3] << 24);
 
-	if(outlen > outsize) {
-		*error = 0;
-		return -1;
-	}
+	if(outlen > outsize)
+    {
+        outlen = outsize;
+        inlen = size - LZMA_PROPS_SIZE;
+        TRACE("lzma_standard_uncompress: lzma data block does not appear to contain a valid size field\n");
 
-	res = LzmaUncompress(dest, &outlen, src + LZMA_HEADER_SIZE, &inlen, src,
-		LZMA_PROPS_SIZE);
+	    res = LzmaUncompress(dest, &outlen, src + LZMA_PROPS_SIZE, &inlen, src, LZMA_PROPS_SIZE);
+	}
+    else
+    {
+	    res = LzmaUncompress(dest, &outlen, src + LZMA_HEADER_SIZE, &inlen, src, LZMA_PROPS_SIZE);
+    }
 	
 	if(res == SZ_OK)
 		return outlen;
