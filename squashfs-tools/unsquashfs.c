@@ -51,7 +51,7 @@ struct super_block sBlk;
 squashfs_operations s_ops;
 struct compressor *comp;
 
-int bytes = 0, swap, file_count = 0, dir_count = 0, sym_count = 0,
+int bytes = 0, swap = -1, file_count = 0, dir_count = 0, sym_count = 0,
 	dev_count = 0, fifo_count = 0;
 char *inode_table = NULL, *directory_table = NULL;
 struct hash_table_entry *inode_table_hash[65536], *directory_table_hash[65536];
@@ -1776,13 +1776,53 @@ int read_super(char *source)
 {
 	squashfs_super_block_3 sBlk_3;
 	struct squashfs_super_block sBlk_4;
+    struct squashfs_generic_super_block generic = { 0 };
+
+    if(swap == -1)
+    {
+        read_fs_bytes(fd, SQUASHFS_START, sizeof(struct squashfs_generic_super_block),
+            &generic);
+        /*
+         * If the major version is greater than or less than the min/max version numbers
+         * or if the least significant bytes of the inode count field is 0, then the
+         * image endianess is probably opposite of the host system.
+         *
+         * Note that these are the only fields besides s_magic that are common among 
+         * all versions of the SquashFS super block structures, and s_magic cannot
+         * be relied on as it is commonly mucked with by vendors.
+         */
+        if(generic.s_major < SQUASHFS_MIN_VERSION ||
+           generic.s_major > SQUASHFS_MAX_VERSION ||
+           (generic.inodes & 0xFF) == 0)
+        {
+            ERROR("SquashFS version [%d.%d] / inode count [%d] suggests a SquashFS image "
+                  "of a different endianess\n", generic.s_major, generic.s_minor, generic.inodes);
+            swap = 1;
+        }
+        else
+        {
+            ERROR("SquashFS version [%d.%d] / inode count [%d] suggests a SquashFS image "
+                  "of the same endianess\n", generic.s_major, generic.s_minor, generic.inodes);
+            swap = 0;
+        }
+    }
+
+    // CJH: Warn if SquashFS magic doesn't look correct
+    if(generic.s_magic != SQUASHFS_MAGIC && generic.s_magic != SQUASHFS_MAGIC_SWAP)
+    {
+        ERROR("Non-standard SquashFS Magic: %.4s\n", (char *) &generic.s_magic);
+    }
+
+    // CJH: Notify if endianess is different
+    if(swap) {
+        ERROR("Reading a different endian SQUASHFS filesystem on %s\n", source);
+	}
 
 	/*
 	 * Try to read a Squashfs 4 superblock
 	 */
 	read_fs_bytes(fd, SQUASHFS_START, sizeof(struct squashfs_super_block),
 		&sBlk_4);
-	swap = sBlk_4.s_magic != SQUASHFS_MAGIC;
 	SQUASHFS_INSWAP_SUPER_BLOCK(&sBlk_4);
 
 	if(sBlk_4.s_magic == SQUASHFS_MAGIC && sBlk_4.s_major == 4 &&
@@ -1812,21 +1852,12 @@ int read_super(char *source)
 	/*
 	 * Check it is a SQUASHFS superblock
 	 */
-	swap = 0;
-	if(sBlk_3.s_magic != SQUASHFS_MAGIC) {
-		if(sBlk_3.s_magic == SQUASHFS_MAGIC_SWAP) {
-			squashfs_super_block_3 sblk;
-			ERROR("Reading a different endian SQUASHFS filesystem "
-				"on %s\n", source);
-			SQUASHFS_SWAP_SUPER_BLOCK_3(&sblk, &sBlk_3);
-			memcpy(&sBlk_3, &sblk, sizeof(squashfs_super_block_3));
-			swap = 1;
-		} else  {
-			ERROR("Can't find a SQUASHFS superblock on %s\n",
-				source);
-			goto failed_mount;
-		}
-	}
+    if(swap)
+    {
+        squashfs_super_block_3 sblk;
+        SQUASHFS_SWAP_SUPER_BLOCK_3(&sblk, &sBlk_3);
+        memcpy(&sBlk_3, &sblk, sizeof(squashfs_super_block_3));
+    }
 
 	sBlk.s.s_magic = sBlk_3.s_magic;
 	sBlk.s.inodes = sBlk_3.inodes;
