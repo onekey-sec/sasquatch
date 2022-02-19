@@ -37,7 +37,7 @@ GZIP_SUPPORT = 1
 # To build install the library and uncomment
 # the XZ_SUPPORT line below.
 #
-#XZ_SUPPORT = 1
+XZ_SUPPORT = 1
 
 
 ############ Building LZO support ##############
@@ -51,7 +51,8 @@ GZIP_SUPPORT = 1
 # To build install the library and uncomment
 # the LZO_SUPPORT line below.
 #
-#LZO_SUPPORT = 1
+LZO_SUPPORT = 1
+#LZO_DIR = /usr/local
 
 
 ########### Building LZ4 support #############
