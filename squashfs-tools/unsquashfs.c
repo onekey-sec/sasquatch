@@ -53,6 +53,7 @@ struct super_block sBlk;
 squashfs_operations *s_ops;
 struct compressor *comp;
 
+struct override_table override = { 0 };
 int bytes = 0, swap = -1, file_count = 0, dir_count = 0, sym_count = 0,
 	dev_count = 0, fifo_count = 0, socket_count = 0, hardlnk_count = 0;
 struct hash_table_entry *inode_table_hash[65536], *directory_table_hash[65536];

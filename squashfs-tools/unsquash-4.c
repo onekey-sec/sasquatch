@@ -703,6 +703,13 @@ int read_super_4(squashfs_operations **s_ops)
 
 	if(sBlk_4.s_magic == SQUASHFS_MAGIC && sBlk_4.s_major == 4 &&
 			sBlk_4.s_minor == 0) {
+
+		// CJH: Update super struct with override values
+        if(override.s_major)
+            sBlk_4.s_major = override.s_major;
+        if(override.s_minor)
+            sBlk_4.s_minor = override.s_minor;
+
 		*s_ops = &ops;
 		memcpy(&sBlk, &sBlk_4, sizeof(sBlk_4));
 

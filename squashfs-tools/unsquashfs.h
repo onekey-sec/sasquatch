@@ -281,6 +281,7 @@ struct directory_stack {
 #define MAXIMUM_READ_SIZE 0x7ffff000
 
 /* globals */
+extern struct override_table override;
 extern struct super_block sBlk;
 extern int swap;
 extern struct hash_table_entry *directory_table_hash[65536];
