@@ -713,18 +713,12 @@ int read_super_3(char *source, squashfs_operations **s_ops, void *s)
 	/*
 	 * Check it is a SQUASHFS superblock
 	 */
-	swap = 0;
-	if(sBlk_3->s_magic == SQUASHFS_MAGIC_SWAP) {
-		squashfs_super_block_3 sblk;
-		ERROR("Reading a different endian SQUASHFS filesystem on %s\n", source);
-		SQUASHFS_SWAP_SUPER_BLOCK_3(&sblk, sBlk_3);
-		memcpy(sBlk_3, &sblk, sizeof(squashfs_super_block_3));
-		swap = 1;
-	}
-
-	if(sBlk_3->s_magic != SQUASHFS_MAGIC || sBlk_3->s_major != 3 ||
-							sBlk_3->s_minor > 1)
-		return -1;
+	if(swap)
+    {
+        squashfs_super_block_3 sblk;
+        SQUASHFS_SWAP_SUPER_BLOCK_3(&sblk, &sBlk_3);
+        memcpy(&sBlk_3, &sblk, sizeof(squashfs_super_block_3));
+    }
 
 	sBlk.s.s_magic = sBlk_3->s_magic;
 	sBlk.s.inodes = sBlk_3->inodes;
