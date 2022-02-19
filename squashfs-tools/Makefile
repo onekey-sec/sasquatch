@@ -328,7 +328,7 @@ endif
 CFLAGS += -DVERSION=\"$(VERSION)\" -DDATE=\"$(DATE)\"
 
 .PHONY: all
-all: mksquashfs unsquashfs
+all: sasquatch
 
 # CJH: Added LZMA_EXTRA_OBJS
 mksquashfs: $(MKSQUASHFS_OBJS)
@@ -394,6 +394,9 @@ unsquashfs: $(UNSQUASHFS_OBJS)
 	$(CC) $(LDFLAGS) $(EXTRA_LDFLAGS) $(UNSQUASHFS_OBJS) $(LZMA_EXTRA_OBJS) $(LIBS) -o $@
 	ln -sf unsquashfs sqfscat
 
+sasquatch: $(UNSQUASHFS_OBJS)
+	$(CXX) $(LDFLAGS) $(EXTRA_LDFLAGS) $(LZMA_EXTRA_OBJS) $(UNSQUASHFS_OBJS) $(LIBS) -o $@
+
 unsquashfs.o: unsquashfs.h unsquashfs.c squashfs_fs.h squashfs_swap.h \
 	squashfs_compat.h xattr.h read_fs.h compressor.h unsquashfs_error.h
 
@@ -426,14 +429,12 @@ lzmadaptive:
 # CJH: Added lzmalt, lzmadaptive
 .PHONY: clean
 clean:
-	-rm -f *.o mksquashfs unsquashfs sqfstar sqfscat
+	-rm -f *.o mksquashfs unsquashfs sqfstar sqfscat sasquatch
 	make -C $(LZMA_ADAPT_DIR) clean
 	make -C $(LZMA_ALT_DIR) clean
 
+# CJH: Added cp sasquatch
 .PHONY: install
-install: mksquashfs unsquashfs
+install: sasquatch
 	mkdir -p $(INSTALL_DIR)
-	cp mksquashfs $(INSTALL_DIR)
-	cp unsquashfs $(INSTALL_DIR)
-	ln -fs $(INSTALL_DIR)/unsquashfs $(INSTALL_DIR)/sqfscat
-	ln -fs $(INSTALL_DIR)/mksquashfs $(INSTALL_DIR)/sqfstar
+	cp sasquatch $(INSTALL_DIR)
