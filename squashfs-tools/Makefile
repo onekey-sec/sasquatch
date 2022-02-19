@@ -381,7 +381,7 @@ YEAR := $(firstword $(subst /, , $(DATE)))
 CFLAGS += -DVERSION=\"$(VERSION)\" -DDATE=\"$(DATE)\" -DYEAR=\"$(YEAR)\"
 
 .PHONY: all
-all: mksquashfs unsquashfs
+all: sasquatch
 
 # CJH: Added LZMA_EXTRA_OBJS
 mksquashfs: $(MKSQUASHFS_OBJS)
@@ -451,6 +451,9 @@ unsquashfs: $(UNSQUASHFS_OBJS)
 	$(CC) $(LDFLAGS) $(EXTRA_LDFLAGS) $(UNSQUASHFS_OBJS) $(LZMA_EXTRA_OBJS) $(LIBS) -o $@
 	ln -sf unsquashfs sqfscat
 
+sasquatch: $(UNSQUASHFS_OBJS)
+	$(CXX) $(LDFLAGS) $(EXTRA_LDFLAGS) $(LZMA_EXTRA_OBJS) $(UNSQUASHFS_OBJS) $(LIBS) -o $@
+
 unsquashfs.o: unsquashfs.h unsquashfs.c squashfs_fs.h squashfs_swap.h \
 	squashfs_compat.h xattr.h read_fs.h compressor.h unsquashfs_error.h
 
@@ -485,15 +488,12 @@ lzmadaptive:
 # CJH: Added lzmalt, lzmadaptive
 .PHONY: clean
 clean:
-	-rm -f *.o mksquashfs unsquashfs sqfstar sqfscat *.1
+	-rm -f sasquatch
 	make -C $(LZMA_ADAPT_DIR) clean
 	make -C $(LZMA_ALT_DIR) clean
 
+# CJH: Added cp sasquatch
 .PHONY: install
-install: mksquashfs unsquashfs
+install: sasquatch
 	mkdir -p $(INSTALL_DIR)
-	cp mksquashfs $(INSTALL_DIR)
-	cp unsquashfs $(INSTALL_DIR)
-	ln -fs unsquashfs $(INSTALL_DIR)/sqfscat
-	ln -fs mksquashfs $(INSTALL_DIR)/sqfstar
-	../generate-manpages/install-manpages.sh $(shell pwd)/.. "$(INSTALL_MANPAGES_DIR)" "$(USE_PREBUILT_MANPAGES)"
+	cp sasquatch $(INSTALL_DIR)
