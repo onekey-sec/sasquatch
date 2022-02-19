@@ -286,6 +286,11 @@ typedef long long		squashfs_inode;
 #define LZ4_COMPRESSION		5
 #define ZSTD_COMPRESSION	6
 
+#define LZMA_WRT_COMPRESSION        7
+#define LZMA_ADAPTIVE_COMPRESSION   8
+#define LZMA_ALT_COMPRESSION        9
+
+
 struct squashfs_super_block {
 	unsigned int		s_magic;
 	unsigned int		inodes;
