@@ -51,6 +51,7 @@ struct super_block sBlk;
 squashfs_operations s_ops;
 struct compressor *comp;
 
+struct override_table override = { 0 };
 int bytes = 0, swap = -1, file_count = 0, dir_count = 0, sym_count = 0,
 	dev_count = 0, fifo_count = 0;
 char *inode_table = NULL, *directory_table = NULL;
@@ -1825,8 +1826,15 @@ int read_super(char *source)
 		&sBlk_4);
 	SQUASHFS_INSWAP_SUPER_BLOCK(&sBlk_4);
 
-	if(sBlk_4.s_magic == SQUASHFS_MAGIC && sBlk_4.s_major == 4 &&
-			sBlk_4.s_minor == 0) {
+    if((sBlk_4.s_major == 4 && sBlk_4.s_minor == 0) ||
+        (override.s_major == 4)) {
+
+        // CJH: Update super struct with override values
+        if(override.s_major)
+            sBlk_4.s_major = override.s_major;
+        if(override.s_minor)
+            sBlk_4.s_minor = override.s_minor;
+
 		s_ops.squashfs_opendir = squashfs_opendir_4;
 		s_ops.read_fragment = read_fragment_4;
 		s_ops.read_fragment_table = read_fragment_table_4;
@@ -1880,14 +1888,22 @@ int read_super(char *source)
 	sBlk.guid_start = sBlk_3.guid_start;
 	sBlk.s.xattr_id_table_start = SQUASHFS_INVALID_BLK;
 
+    // CJH: Update super struct with override values
+    if(override.s_major)
+        sBlk.s.s_major = override.s_major;
+    if(override.s_minor)
+        sBlk.s.s_minor = override.s_minor;
+
 	/* Check the MAJOR & MINOR versions */
-	if(sBlk.s.s_major == 1 || sBlk.s.s_major == 2) {
+    // CJH: Added s_major override
+	if((sBlk.s.s_major == 1 || sBlk.s.s_major == 2)) {
 		sBlk.s.bytes_used = sBlk_3.bytes_used_2;
 		sBlk.uid_start = sBlk_3.uid_start_2;
 		sBlk.guid_start = sBlk_3.guid_start_2;
 		sBlk.s.inode_table_start = sBlk_3.inode_table_start_2;
 		sBlk.s.directory_table_start = sBlk_3.directory_table_start_2;
 		
+        // CJH: Added s_major override
 		if(sBlk.s.s_major == 1) {
 			sBlk.s.block_size = sBlk_3.block_size_1;
 			sBlk.s.fragment_table_start = sBlk.uid_start;
