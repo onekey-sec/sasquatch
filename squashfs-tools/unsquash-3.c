@@ -713,6 +713,13 @@ int read_super_3(char *source, squashfs_operations **s_ops, void *s)
 	sBlk.guid_start = sBlk_3->guid_start;
 	sBlk.s.xattr_id_table_start = SQUASHFS_INVALID_BLK;
 
+    // CJH: Update super struct with override values
+    if(override.s_major)
+        sBlk.s.s_major = override.s_major;
+    if(override.s_minor)
+        sBlk.s.s_minor = override.s_minor;
+
+
 	*s_ops = &ops;
 
 	/*

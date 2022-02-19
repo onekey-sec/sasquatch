@@ -514,4 +514,21 @@ struct squashfs_xattr_table {
 	unsigned int		unused;
 };
 
+// CJH: Override structures (see usage)
+struct lzma_override_property
+{
+    int set;
+    int value;
+};
+struct override_table
+{
+    int s_major;
+    int s_minor;
+    struct lzma_override_property lc;
+    struct lzma_override_property lp;
+    struct lzma_override_property pb;
+    struct lzma_override_property dictionary_size;
+    struct lzma_override_property offset;
+};
+
 #endif
