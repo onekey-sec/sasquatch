@@ -49,7 +49,7 @@ int processors = 1;
 
 struct super_block sBlk;
 squashfs_operations s_ops;
-struct compressor *comp;
+struct compressor *comp = NULL;
 
 struct override_table override = { 0 };
 int bytes = 0, swap = -1, file_count = 0, dir_count = 0, sym_count = 0,
@@ -1846,7 +1846,10 @@ int read_super(char *source)
 		/*
 		 * Check the compression type
 		 */
-		comp = lookup_compressor_id(sBlk.s.compression);
+		if(!comp)
+        {
+			comp = lookup_compressor_id(sBlk.s.compression);
+        }
 		return TRUE;
 	}
 
@@ -1939,7 +1942,10 @@ int read_super(char *source)
 	/*
 	 * 1.x, 2.x and 3.x filesystems use gzip compression.
 	 */
-	comp = lookup_compressor("gzip");
+    if(!comp)
+    {
+		comp = lookup_compressor("gzip");
+    }
 	return TRUE;
 
 failed_mount:
@@ -2655,6 +2661,81 @@ int main(int argc, char *argv[])
 		} else if(strcmp(argv[i], "-regex") == 0 ||
 				strcmp(argv[i], "-r") == 0)
 			use_regex = TRUE;
+        // CJH: Added -comp, -be, -le, -major, -minor options
+        else if(strcmp(argv[i], "-c") == 0 ||
+                strcmp(argv[i], "-comp") == 0) {
+            if(++i == argc) {
+                fprintf(stderr, "%s: -comp missing compression option\n",
+                    argv[0]);
+                exit(1);
+            }
+            comp = lookup_compressor(argv[i]);
+        } else if(strcmp(argv[i], "-major") == 0) {
+            if(++i == argc) {
+                fprintf(stderr, "%s: -major missing version option\n",
+                    argv[0]);
+                exit(1);
+            }
+            override.s_major = atoi(argv[i]);
+        } else if(strcmp(argv[i], "-minor") == 0) {
+            if(++i == argc) {
+                fprintf(stderr, "%s: -minor missing version option\n",
+                    argv[0]);
+                exit(1);
+            }
+            override.s_minor = atoi(argv[i]);
+        } else if(strcmp(argv[i], "-lc") == 0) {
+            if(++i == argc) {
+                fprintf(stderr, "%s: -lc missing value option\n",
+                    argv[0]);
+                exit(1);
+            }
+            override.lc.value = atoi(argv[i]);
+            override.lc.set = TRUE;
+        } else if(strcmp(argv[i], "-lp") == 0) {
+            if(++i == argc) {
+                fprintf(stderr, "%s: -lp missing value option\n",
+                    argv[0]);
+                exit(1);
+            }
+            override.lp.value = atoi(argv[i]);
+            override.lp.set = TRUE;
+        } else if(strcmp(argv[i], "-pb") == 0) {
+            if(++i == argc) {
+                fprintf(stderr, "%s: -pb missing value option\n",
+                    argv[0]);
+                exit(1);
+            }
+            override.pb.value = atoi(argv[i]);
+            override.pb.set = TRUE;
+        } else if(strcmp(argv[i], "-dict") == 0) {
+            if(++i == argc) {
+                fprintf(stderr, "%s: -dict missing value option\n",
+                    argv[0]);
+                exit(1);
+            }
+            override.dictionary_size.value = atoi(argv[i]);
+            override.dictionary_size.set = TRUE;
+        } else if(strcmp(argv[i], "-lzma-offset") == 0) {
+            if(++i == argc) {
+                fprintf(stderr, "%s: -lzma-offset missing value option\n",
+                    argv[0]);
+                exit(1);
+            }
+            override.offset.value = atoi(argv[i]);
+            override.offset.set = TRUE;
+        } else if(strcmp(argv[i], "-be") == 0)
+#if __BYTE_ORDER == __BIG_ENDIAN
+            swap = 0;
+#else
+            swap = 1;
+#endif
+        else if(strcmp(argv[i], "-le") == 0)
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+            swap = 0;
+#else
+            swap = 1;
+#endif
 		else
 			goto options;
 	}
@@ -2718,6 +2799,21 @@ options:
 				"regular expressions\n");
 			ERROR("\t\t\t\trather than use the default shell "
 				"wildcard\n\t\t\t\texpansion (globbing)\n");
+            // CJH: Added -comp, -be, -le, -major, -minor and lzma options help output
+            ERROR("\n");
+            ERROR("\t-lc <value>\t\tSet the lzma-adaptive lc parameter [0-4]\n");
+            ERROR("\t-lp <value>\t\tSet the lzma-adaptive lp parameter [0-4]\n");
+            ERROR("\t-pb <value>\t\tSet the lzma-adaptive pb parameter [0-8]\n");
+            ERROR("\t-dict <value>\t\tSet the lzma-adaptive dictionary size\n");
+            ERROR("\t-lzma-offset <value>\tSet the lzma-adaptive LZMA data offset\n");
+            ERROR("\t-major <version>\tManually set the SquashFS major "
+                "version number\n");
+            ERROR("\t-minor <version>\tManually set the SquashFS minor "
+                "version number\n");
+            ERROR("\t-be\t\t\tTreat the filesystem as big endian\n");
+            ERROR("\t-le\t\t\tTreat the filesystem as little endian\n");
+			ERROR("\t-c[omp] <decompressor>\tSpecify the "
+				"decompressor to use\n");
 			ERROR("\nDecompressors available:\n");
 			display_compressors("", "");
 		}
