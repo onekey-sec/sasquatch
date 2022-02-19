@@ -48,7 +48,7 @@ pthread_mutex_t	fragment_mutex;
 static long long start_offset = 0;
 
 /* user options that control parallelisation */
-int processors = -1;
+int processors = 1;
 
 struct super_block sBlk;
 squashfs_operations *s_ops;
