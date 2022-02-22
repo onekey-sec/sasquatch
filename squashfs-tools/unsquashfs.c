@@ -3901,9 +3901,9 @@ static void print_options(FILE *stream, char *name)
 	fprintf(stream, "\t-h[elp]\t\t\toutput this options text to stdout\n");
 	// CJH: Added -comp, -be, -le, -major, -minor and lzma options help output
 	fprintf(stream, "\n");
-	fprintf(stream, "\t-lc <value>\t\tSet the lzma-adaptive lc parameter [0-4]\n");
-	fprintf(stream, "\t-lp <value>\t\tSet the lzma-adaptive lp parameter [0-4]\n");
-	fprintf(stream, "\t-pb <value>\t\tSet the lzma-adaptive pb parameter [0-8]\n");
+	fprintf(stream, "\t-LC <value>\t\tSet the lzma-adaptive lc parameter [0-4]\n");
+	fprintf(stream, "\t-LP <value>\t\tSet the lzma-adaptive lp parameter [0-4]\n");
+	fprintf(stream, "\t-PB <value>\t\tSet the lzma-adaptive pb parameter [0-8]\n");
 	fprintf(stream, "\t-dict <value>\t\tSet the lzma-adaptive dictionary size\n");
 	fprintf(stream, "\t-lzma-offset <value>\tSet the lzma-adaptive LZMA data offset\n");
 	fprintf(stream, "\t-major <version>\tManually set the SquashFS major "
@@ -3912,7 +3912,7 @@ static void print_options(FILE *stream, char *name)
 		"version number\n");
 	fprintf(stream, "\t-be\t\t\tTreat the filesystem as big endian\n");
 	fprintf(stream, "\t-le\t\t\tTreat the filesystem as little endian\n");
-	fprintf(stream, "\t-c[omp] <decompressor>\tSpecify the "
+	fprintf(stream, "\t-C[OMP] <decompressor>\tSpecify the "
 		"decompressor to use\n");
 
 	fprintf(stream, "\nDecompressors available:\n");
@@ -4282,11 +4282,12 @@ int parse_options(int argc, char *argv[])
 							argv[0], argv[i - 1]);
 				exit(1);
 			}
+		}
         // CJH: Added -comp, -be, -le, -major, -minor options
-        else if(strcmp(argv[i], "-c") == 0 ||
-                strcmp(argv[i], "-comp") == 0) {
+        else if(strcmp(argv[i], "-C") == 0 ||
+                strcmp(argv[i], "-COMP") == 0) {
             if(++i == argc) {
-                fprintf(stderr, "%s: -comp missing compression option\n",
+                fprintf(stderr, "%s: -COMP missing compression option\n",
                     argv[0]);
                 exit(1);
             }
@@ -4305,25 +4306,25 @@ int parse_options(int argc, char *argv[])
                 exit(1);
             }
             override.s_minor = atoi(argv[i]);
-        } else if(strcmp(argv[i], "-lc") == 0) {
+        } else if(strcmp(argv[i], "-LC") == 0) {
             if(++i == argc) {
-                fprintf(stderr, "%s: -lc missing value option\n",
+                fprintf(stderr, "%s: -LC missing value option\n",
                     argv[0]);
                 exit(1);
             }
             override.lc.value = atoi(argv[i]);
             override.lc.set = TRUE;
-        } else if(strcmp(argv[i], "-lp") == 0) {
+        } else if(strcmp(argv[i], "-LP") == 0) {
             if(++i == argc) {
-                fprintf(stderr, "%s: -lp missing value option\n",
+                fprintf(stderr, "%s: -LP missing value option\n",
                     argv[0]);
                 exit(1);
             }
             override.lp.value = atoi(argv[i]);
             override.lp.set = TRUE;
-        } else if(strcmp(argv[i], "-pb") == 0) {
+        } else if(strcmp(argv[i], "-PB") == 0) {
             if(++i == argc) {
-                fprintf(stderr, "%s: -pb missing value option\n",
+                fprintf(stderr, "%s: -PB missing value option\n",
                     argv[0]);
                 exit(1);
             }
@@ -4345,13 +4346,13 @@ int parse_options(int argc, char *argv[])
             }
             override.offset.value = atoi(argv[i]);
             override.offset.set = TRUE;
-        } else if(strcmp(argv[i], "-be") == 0)
+        } else if(strcmp(argv[i], "-be") == 0) {
 #if __BYTE_ORDER == __BIG_ENDIAN
             swap = 0;
 #else
             swap = 1;
 #endif
-        else if(strcmp(argv[i], "-le") == 0)
+		} else if(strcmp(argv[i], "-le") == 0) {
 #if __BYTE_ORDER == __LITTLE_ENDIAN
             swap = 0;
 #else
