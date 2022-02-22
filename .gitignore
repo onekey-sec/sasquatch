@@ -1,5 +1,6 @@
 *.o
 *.a
 *.swp
+.vscode
 
 squashfs-tools/sasquatch
