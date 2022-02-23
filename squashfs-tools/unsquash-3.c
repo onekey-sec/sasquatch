@@ -769,7 +769,7 @@ static void squashfs_stat(char *source)
 					gmtime(&mkfs_time);
 	char *mkfs_str = asctime(t);
 
-#if __BYTE_ORDER == __BIG_ENDIAN
+#if __BYTE_ORDER == __BIG_ENDIAN || defined FIX_BE
 	printf("Found a valid %sSQUASHFS %d:%d superblock on %s.\n",
 		swap ? "little endian " : "big endian ", sBlk.s.s_major,
 		sBlk.s.s_minor, source);
