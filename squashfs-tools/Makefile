@@ -488,7 +488,7 @@ lzmadaptive:
 # CJH: Added lzmalt, lzmadaptive
 .PHONY: clean
 clean:
-	-rm -f sasquatch
+	-rm -f *.o sasquatch
 	make -C $(LZMA_ADAPT_DIR) clean
 	make -C $(LZMA_ALT_DIR) clean
 
