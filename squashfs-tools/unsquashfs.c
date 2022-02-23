@@ -2300,10 +2300,10 @@ int read_super(char *source)
 	squashfs_super_block_3 sBlk_3;
     struct squashfs_generic_super_block generic = { 0 };
 
+	read_fs_bytes(fd, SQUASHFS_START, sizeof(struct squashfs_generic_super_block),
+		&generic);
     if(swap == -1)
     {
-        read_fs_bytes(fd, SQUASHFS_START, sizeof(struct squashfs_generic_super_block),
-            &generic);
         /*
          * If the major version is greater than or less than the min/max version numbers
          * or if the least significant bytes of the inode count field is 0, then the
@@ -2332,7 +2332,7 @@ int read_super(char *source)
     // CJH: Warn if SquashFS magic doesn't look correct
     if(generic.s_magic != SQUASHFS_MAGIC && generic.s_magic != SQUASHFS_MAGIC_SWAP)
     {
-        ERROR("Non-standard SquashFS Magic: %.4s\n", (char *) &generic.s_magic);
+        ERROR("Non-standard SquashFS Magic: '%.4s'\n", (char *) &generic.s_magic);
     }
 
     // CJH: Notify if endianess is different
