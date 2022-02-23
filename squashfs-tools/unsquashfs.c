@@ -2257,13 +2257,21 @@ int read_super(char *source)
         {
             ERROR("SquashFS version [%d.%d] / inode count [%d] suggests a SquashFS image "
                   "of a different endianess\n", generic.s_major, generic.s_minor, generic.inodes);
-            swap = 1;
+#ifdef FIX_BE
+            swap = 0;
+#else
+			swap = 1;
+#endif
         }
         else
         {
             ERROR("SquashFS version [%d.%d] / inode count [%d] suggests a SquashFS image "
                   "of the same endianess\n", generic.s_major, generic.s_minor, generic.inodes);
-            swap = 0;
+#ifdef FIX_BE
+            swap = 1;
+#else
+			swap = 0;
+#endif
         }
     }
 
