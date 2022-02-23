@@ -65,7 +65,7 @@ LZO_SUPPORT = 1
 # To build install and uncomment
 # the LZ4_SUPPORT line below.
 #
-#LZ4_SUPPORT = 1
+LZ4_SUPPORT = 1
 
 
 ########### Building ZSTD support ############
@@ -82,7 +82,7 @@ LZO_SUPPORT = 1
 # the ZSTD_SUPPORT line below.
 #
 
-#ZSTD_SUPPORT = 1
+ZSTD_SUPPORT = 1
 
 #LZMA_XZ_SUPPORT = 1
 LZMA_SUPPORT = 1
