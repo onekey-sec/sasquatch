@@ -704,8 +704,8 @@ int read_super_3(char *source, squashfs_operations **s_ops, void *s)
 	if(swap)
     {
         squashfs_super_block_3 sblk;
-        SQUASHFS_SWAP_SUPER_BLOCK_3(&sblk, &sBlk_3);
-        memcpy(&sBlk_3, &sblk, sizeof(squashfs_super_block_3));
+        SQUASHFS_SWAP_SUPER_BLOCK_3(&sblk, sBlk_3);
+        memcpy(sBlk_3, &sblk, sizeof(squashfs_super_block_3));
     }
 
 	sBlk.s.s_magic = sBlk_3->s_magic;
