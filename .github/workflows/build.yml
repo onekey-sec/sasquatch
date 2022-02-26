@@ -1,0 +1,23 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Build
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the sasquatch branch
+  push:
+    branches: [ sasquatch ]
+  pull_request:
+    branches: [ sasquatch ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build Debian package
+        uses: dawidd6/action-debian-package@v1.4.0
