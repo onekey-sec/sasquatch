@@ -26,7 +26,6 @@ jobs:
       - name: Upload DEB artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: deb
           path: ${{ github.workspace }}/*.deb
           if-no-files-found: error
 
