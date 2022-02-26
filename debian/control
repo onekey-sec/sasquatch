@@ -2,7 +2,7 @@ Source: sasquatch
 Section: misc
 Priority: optional
 Maintainer: Marton Illes <marton.illes@iot-inspector.com>
-Build-Depends: debhelper-compat (= 13)
+Build-Depends: debhelper-compat (= 13), liblzo2-dev, zlib1g-dev, liblz4-dev, liblzma-dev, libzstd-dev
 Standards-Version: 4.5.1
 Homepage: https://github.com/IoT-Inspector/sasquatch
 #Vcs-Browser: https://salsa.debian.org/debian/sasquatch
