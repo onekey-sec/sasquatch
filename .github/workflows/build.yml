@@ -23,3 +23,10 @@ jobs:
         uses: dawidd6/action-debian-package@v1.4.0
         with:
           os_distribution: bullseye
+      - name: Upload DEB artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: deb
+          path: ${{ github.workspace }}/*.deb
+          if-no-files-found: error
+
