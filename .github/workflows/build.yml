@@ -21,3 +21,5 @@ jobs:
       - uses: actions/checkout@v2
       - name: Build Debian package
         uses: dawidd6/action-debian-package@v1.4.0
+        with:
+          os_distribution: bullseye
