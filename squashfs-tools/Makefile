@@ -385,7 +385,7 @@ all: sasquatch
 
 # CJH: Added LZMA_EXTRA_OBJS
 mksquashfs: $(MKSQUASHFS_OBJS)
-	$(CC) $(LDFLAGS) $(EXTRA_LDFLAGS) $(LZMA_EXTRA_OBJS) $(MKSQUASHFS_OBJS) $(LIBS) -o $@
+	$(CXX) $(LDFLAGS) $(EXTRA_LDFLAGS) $(LZMA_EXTRA_OBJS) $(MKSQUASHFS_OBJS) $(LIBS) -o $@
 	ln -sf mksquashfs sqfstar
 
 mksquashfs.o: Makefile mksquashfs.c squashfs_fs.h squashfs_swap.h mksquashfs.h \

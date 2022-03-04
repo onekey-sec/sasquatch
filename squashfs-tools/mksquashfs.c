@@ -187,6 +187,8 @@ long long hardlnk_count = 0;
 
 /* superblock attributes */
 struct squashfs_super_block sBlk;
+struct override_table override = { 0 };
+
 
 /* write position within data section */
 long long bytes = 0, total_bytes = 0;
