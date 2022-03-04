@@ -78,6 +78,7 @@ int delete = FALSE;
 int quiet = FALSE;
 int fd;
 struct squashfs_super_block sBlk;
+struct override_table override = { 0 };
 
 /* filesystem flags for building */
 int comp_opts = FALSE;
