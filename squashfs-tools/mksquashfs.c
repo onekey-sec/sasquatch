@@ -76,6 +76,7 @@
 #include "read_fs.h"
 #include "restore.h"
 #include "process_fragments.h"
+#include <sys/sysmacros.h>
 
 int delete = FALSE;
 int fd;
@@ -988,49 +989,49 @@ int create_inode(squashfs_inode *i_no, struct dir_info *dir_info,
 	}
 	else if(type == SQUASHFS_CHRDEV_TYPE || type == SQUASHFS_BLKDEV_TYPE) {
 		struct squashfs_dev_inode_header *dev = &inode_header.dev;
-		unsigned int major = major(buf->st_rdev);
-		unsigned int minor = minor(buf->st_rdev);
+		unsigned int maj = major(buf->st_rdev);
+		unsigned int min = minor(buf->st_rdev);
 
-		if(major > 0xfff) {
+		if(maj > 0xfff) {
 			ERROR("Major %d out of range in device node %s, "
-				"truncating to %d\n", major, filename,
-				major & 0xfff);
-			major &= 0xfff;
+				"truncating to %d\n", maj, filename,
+				maj & 0xfff);
+			maj &= 0xfff;
 		}
-		if(minor > 0xfffff) {
+		if(min > 0xfffff) {
 			ERROR("Minor %d out of range in device node %s, "
-				"truncating to %d\n", minor, filename,
-				minor & 0xfffff);
-			minor &= 0xfffff;
+				"truncating to %d\n", min, filename,
+				min & 0xfffff);
+			min &= 0xfffff;
 		}
 		inode = get_inode(sizeof(*dev));
 		dev->nlink = nlink;
-		dev->rdev = (major << 8) | (minor & 0xff) |
-				((minor & ~0xff) << 12);
+		dev->rdev = (maj << 8) | (min & 0xff) |
+				((min & ~0xff) << 12);
 		SQUASHFS_SWAP_DEV_INODE_HEADER(dev, inode);
 		TRACE("Device inode, rdev 0x%x, nlink %d\n", dev->rdev, nlink);
 	}
 	else if(type == SQUASHFS_LCHRDEV_TYPE || type == SQUASHFS_LBLKDEV_TYPE) {
 		struct squashfs_ldev_inode_header *dev = &inode_header.ldev;
-		unsigned int major = major(buf->st_rdev);
-		unsigned int minor = minor(buf->st_rdev);
+		unsigned int maj = major(buf->st_rdev);
+		unsigned int min = minor(buf->st_rdev);
 
-		if(major > 0xfff) {
+		if(maj > 0xfff) {
 			ERROR("Major %d out of range in device node %s, "
-				"truncating to %d\n", major, filename,
-				major & 0xfff);
-			major &= 0xfff;
+				"truncating to %d\n", maj, filename,
+				maj & 0xfff);
+			maj &= 0xfff;
 		}
-		if(minor > 0xfffff) {
+		if(min > 0xfffff) {
 			ERROR("Minor %d out of range in device node %s, "
-				"truncating to %d\n", minor, filename,
-				minor & 0xfffff);
-			minor &= 0xfffff;
+				"truncating to %d\n", min, filename,
+				min & 0xfffff);
+			min &= 0xfffff;
 		}
 		inode = get_inode(sizeof(*dev));
 		dev->nlink = nlink;
-		dev->rdev = (major << 8) | (minor & 0xff) |
-				((minor & ~0xff) << 12);
+		dev->rdev = (maj << 8) | (min & 0xff) |
+				((min & ~0xff) << 12);
 		dev->xattr = xattr;
 		SQUASHFS_SWAP_LDEV_INODE_HEADER(dev, inode);
 		TRACE("Device inode, rdev 0x%x, nlink %d\n", dev->rdev, nlink);
