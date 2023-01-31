@@ -2081,8 +2081,10 @@ int pre_scan(char *parent_name, unsigned int start_block, unsigned int offset,
 	if(dir == NULL)
 		return FALSE;
 
-	if(inumber_lookup(i->inode_number))
-		EXIT_UNSQUASH("File System corrupted: directory loop detected\n");
+	if(inumber_lookup(i->inode_number)) {
+		ERROR("File System corrupted: directory loop detected\n");
+		return FALSE;
+	}
 
 	while(squashfs_readdir(dir, &name, &start_block, &offset, &type)) {
 		struct inode *i;
@@ -2149,8 +2151,10 @@ int dir_scan(char *parent_name, unsigned int start_block, unsigned int offset,
 		return FALSE;
 	}
 
-	if(inumber_lookup(i->inode_number))
-		EXIT_UNSQUASH("File System corrupted: directory loop detected\n");
+	if(inumber_lookup(i->inode_number)) {
+		ERROR("File System corrupted: directory loop detected\n");
+		return FALSE;
+	}
 
 	if((lsonly || info) && (!concise || dir->dir_count ==0))
 		print_filename(parent_name, i);
@@ -3693,8 +3697,10 @@ int pseudo_scan1(char *parent_name, unsigned int start_block, unsigned int offse
 		return FALSE;
 	}
 
-	if(inumber_lookup(i->inode_number))
-		EXIT_UNSQUASH("File System corrupted: directory loop detected\n");
+	if(inumber_lookup(i->inode_number)) {
+		ERROR("File System corrupted: directory loop detected\n");
+		return FALSE;
+	}
 
 	pseudo_print(parent_name, i, NULL, 0);
 
@@ -3773,8 +3779,10 @@ int pseudo_scan2(char *parent_name, unsigned int start_block, unsigned int offse
 		return FALSE;
 	}
 
-	if(inumber_lookup(i->inode_number))
-		EXIT_UNSQUASH("File System corrupted: directory loop detected\n");
+	if(inumber_lookup(i->inode_number)) {
+		ERROR("File System corrupted: directory loop detected\n");
+		return FALSE;
+	}
 
 	if(max_depth == -1 || depth <= max_depth) {
 		while(squashfs_readdir(dir, &name, &start_block, &offset, &type)) {
