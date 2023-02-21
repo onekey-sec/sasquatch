@@ -2,7 +2,7 @@
 #define __LZARITHMETIC_DECODER_H
 
 #include "WindowOut.h"
-#include "LZMA.h"
+#include "LZMA3.h"
 #include "LenCoder.h"
 #include "LiteralCoder.h"
 
