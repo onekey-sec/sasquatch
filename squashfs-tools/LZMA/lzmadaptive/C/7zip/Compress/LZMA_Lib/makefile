@@ -1,8 +1,7 @@
 PROG = liblzmalib.a
-CXX = g++ -O3 -Wall
 AR = ar
 RM = rm -f
-CFLAGS = -c  -I ../../../
+CFLAGS = -O3 -Wall -c  -I ../../../
 
 OBJS = \
   ZLib.o \
