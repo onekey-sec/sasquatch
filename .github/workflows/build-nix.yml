@@ -33,3 +33,5 @@ jobs:
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
       - run: |
           nix flake check -L --option system ${{ matrix.arch }} --extra-platforms ${{ matrix.arch }}
+      - run: |
+          nix build -L --option system ${{ matrix.arch }} --extra-platforms ${{ matrix.arch }}
