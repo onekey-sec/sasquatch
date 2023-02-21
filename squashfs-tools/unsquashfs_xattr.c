@@ -39,9 +39,11 @@ int write_xattr(char *pathname, unsigned int xattr)
 	unsigned int count;
 	struct xattr_list *xattr_list;
 	int i;
-	static int nonsuper_error = FALSE;
 	static int ignore_xattrs = FALSE;
+#if __linux__
+	static int nonsuper_error = FALSE;
 	static int nospace_error = 0;
+#endif
 	int failed;
 
 	if(ignore_xattrs || xattr == SQUASHFS_INVALID_XATTR ||
@@ -63,7 +65,7 @@ int write_xattr(char *pathname, unsigned int xattr)
 
 		if(ignore_xattrs || (user_xattrs && prefix != SQUASHFS_XATTR_USER))
 			continue;
-
+#if __linux__
 		if(root_process || prefix == SQUASHFS_XATTR_USER) {
 			int res = lsetxattr(pathname, xattr_list[i].full_name,
 				xattr_list[i].value, xattr_list[i].vsize, 0);
@@ -142,6 +144,7 @@ int write_xattr(char *pathname, unsigned int xattr)
 			nonsuper_error = TRUE;
 			failed = TRUE;
 		}
+#endif
 	}
 
 	free_xattr(xattr_list, count);

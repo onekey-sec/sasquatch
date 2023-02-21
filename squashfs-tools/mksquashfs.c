@@ -4224,7 +4224,9 @@ static void dir_scan7(squashfs_inode *inode, struct dir_info *dir_info)
 	while((dir_ent = scan7_readdir(&dir, dir_info, dir_ent)) != NULL) {
 		struct stat *buf = &dir_ent->inode->buf;
 
+#if __linux__
 		update_info(dir_ent);
+#endif
 
 		if(dir_ent->inode->inode == SQUASHFS_INVALID_BLK) {
 			switch(buf->st_mode & S_IFMT) {
@@ -5129,7 +5131,9 @@ static void initialise_threads(int readq, int fragq, int bwriteq, int fwriteq,
 	pthread_create(&reader_thread, NULL, reader, NULL);
 	pthread_create(&writer_thread, NULL, writer, NULL);
 	init_progress_bar();
+#if __linux__
 	init_info();
+#endif
 
 	for(i = 0; i < processors; i++) {
 		if(pthread_create(&deflator_thread[i], NULL, deflator, NULL))

@@ -21,7 +21,7 @@
  *
  * info.c
  */
-
+#if __linux__
 #include <pthread.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
@@ -189,3 +189,4 @@ void init_info()
 {
 	pthread_create(&info_thread, NULL, info_thrd, NULL);
 }
+#endif
