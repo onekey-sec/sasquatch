@@ -53,5 +53,14 @@
         inherit (nixpkgsFor.${system}) sasquatch sasquatch-be sasquatch-le;
         default = sasquatch;
       });
+      devShells = forAllSystems (system:
+        let
+          pkgs = nixpkgsFor.${system};
+        in
+        {
+          default = pkgs.mkShell {
+            inputsFrom = [ pkgs.sasquatch-le ];
+          };
+        });
     };
 }
