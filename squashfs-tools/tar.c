@@ -1541,7 +1541,9 @@ squashfs_inode process_tar_file(int progress)
 			root_dir = new;
 
 			if(S_ISREG(tar_file->buf.st_mode) && dir_ent->inode->read == FALSE) {
+#if __linux__
 				update_info(dir_ent);
+#endif
 				tar_file->file = write_file(dir_ent, &duplicate_file);
 				dir_ent->inode->read = TRUE;
 				INFO("file %s, uncompressed size %lld bytes %s\n", tar_file->pathname,

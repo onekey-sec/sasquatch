@@ -32,10 +32,13 @@
 #include "stdarg.h"
 #include "fnmatch_compat.h"
 
-#include <sys/sysinfo.h>
-#include <sys/sysmacros.h>
+#if __linux__
+    #include <sys/sysmacros.h>
+#else
+    #include <sys/param.h>
+    #include <sys/sysctl.h>
+#endif
 #include <sys/types.h>
-#include <sys/sysmacros.h>
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <limits.h>
@@ -627,7 +630,7 @@ int read_fs_bytes(int fd, long long byte, long long bytes, void *buff)
 	}
 
 	for(count = 0; count < bytes; count += res) {
-		int len = (bytes - count) > SSIZE_MAX ? SSIZE_MAX : bytes - count;
+		long len = (bytes - count) > SSIZE_MAX ? SSIZE_MAX : bytes - count;
 		res = read(fd, buff + count, len);
 		if(res < 1) {
 			if(res == 0) {
@@ -1185,10 +1188,12 @@ int create_inode(char *pathname, struct inode *i)
 			break;
 		case SQUASHFS_SYMLINK_TYPE:
 		case SQUASHFS_LSYMLINK_TYPE: {
+#if __linux__
 			struct timespec times[2] = {
 				{ i->time, 0 },
 				{ i->time, 0 }
 			};
+#endif
 
 			TRACE("create_inode: symlink, symlink_size %lld\n",
 				i->data);
@@ -1204,6 +1209,7 @@ int create_inode(char *pathname, struct inode *i)
 				goto failed;
 			}
 
+#if __linux__
 			res = utimensat(AT_FDCWD, pathname, times,
 					AT_SYMLINK_NOFOLLOW);
 			if(res == -1) {
@@ -1211,7 +1217,7 @@ int create_inode(char *pathname, struct inode *i)
 					" set time on %s, because %s\n",
 					pathname, strerror(errno));
 			}
-
+#endif
 			res = write_xattr(pathname, i->xattr);
 			if(res == FALSE)
 				failed = TRUE;
@@ -2159,7 +2165,9 @@ int dir_scan(char *parent_name, unsigned int start_block, unsigned int offset,
 					scan_res = FALSE;
 				free(pathname);
 			} else if(newt == NULL) {
+#if __linux__
 				update_info(pathname);
+#endif
 
 				i = s_ops->read_inode(start_block, offset);
 
@@ -2899,12 +2907,16 @@ void initialise_threads(int fragment_buffer_size, int data_buffer_size, int cat_
 
 	if(pseudo_file) {
 		pthread_create(&thread[1], NULL, cat_writer, NULL);
+#if __linux__
 		init_info();
+#endif
 	} else if(cat_files)
 		pthread_create(&thread[1], NULL, cat_writer, NULL);
 	else {
 		pthread_create(&thread[1], NULL, writer, NULL);
+#if __linux__
 		init_info();
+#endif
 	}
 
 	pthread_mutex_init(&fragment_mutex, NULL);
@@ -3697,7 +3709,9 @@ int pseudo_scan2(char *parent_name, unsigned int start_block, unsigned int offse
 				i = s_ops->read_inode(start_block, offset);
 
 				if(created_inode[i->inode_number - 1] == NULL) {
+#if __linux__
 					update_info(pathname);
+#endif
 
 					i = s_ops->read_inode(start_block, offset);
 					res = cat_file(i, pathname);
