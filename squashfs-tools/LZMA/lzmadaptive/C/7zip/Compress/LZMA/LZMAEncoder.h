@@ -9,7 +9,7 @@
 #include "../LZ/IMatchFinder.h"
 #include "../RangeCoder/RangeCoderBitTree.h"
 
-#include "LZMA.h"
+#include "LZMA2.h"
 
 namespace NCompress {
 namespace NLZMA {
