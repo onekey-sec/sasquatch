@@ -1,0 +1,58 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Build
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the sasquatch branch
+  push:
+    branches:
+      - sasquatch
+  pull_request:
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  build_amd64:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build Debian package (AMD64)
+        uses: dawidd6/action-debian-package@v1.4.4
+        with:
+          os_distribution: bullseye
+          cpu_architecture: amd64
+      - name: Upload DEB artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          path: ${{ github.workspace }}/*.deb
+  build_arm64:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build Debian package (AARCH64)
+        uses: dawidd6/action-debian-package@v1.4.4
+        with:
+          os_distribution: bullseye
+          cpu_architecture: arm64
+      - name: Upload DEB artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          path: ${{ github.workspace }}/*.deb
+          if-no-files-found: error
+  build_arm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build Debian package (ARM32)
+        uses: dawidd6/action-debian-package@v1.4.4
+        with:
+          os_distribution: bullseye
+          cpu_architecture: arm
+      - name: Upload DEB artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          path: ${{ github.workspace }}/*.deb
+          if-no-files-found: error

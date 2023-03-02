@@ -53,13 +53,15 @@ pthread_mutex_t	fragment_mutex;
 static long long start_offset = 0;
 
 /* user options that control parallelisation */
-int processors = -1;
+int processors = 1;
 
 struct super_block sBlk;
-squashfs_operations *s_ops;
-struct compressor *comp;
 
-int bytes = 0, swap, file_count = 0, dir_count = 0, sym_count = 0,
+squashfs_operations *s_ops;
+struct compressor *comp = NULL;
+
+struct override_table override = { 0 };
+int bytes = 0, swap = -1, file_count = 0, dir_count = 0, sym_count = 0,
 	dev_count = 0, fifo_count = 0, socket_count = 0, hardlnk_count = 0;
 struct hash_table_entry *inode_table_hash[65536], *directory_table_hash[65536];
 int fd;
@@ -732,8 +734,6 @@ int read_block(int fd, long long start, long long *next, int expected,
 			outlen, &error);
 
 		if(res == -1) {
-			ERROR("%s uncompress failed with error code %d\n",
-				comp->name, error);
 			goto failed;
 		}
 	} else {
@@ -751,7 +751,10 @@ int read_block(int fd, long long start, long long *next, int expected,
 	 * is of the expected size
 	 */
 	if(expected && expected != res)
+    {
+        ERROR("Decompressed size did not match the expected size! [%d != %d]\n", res, expected);
 		return FALSE;
+    }
 	else
 		return res;
 
@@ -2265,9 +2268,8 @@ int check_compression(struct compressor *comp)
 	if(!comp->supported) {
 		ERROR("Filesystem uses %s compression, this is "
 			"unsupported by this version\n", comp->name);
-		ERROR("Decompressors available:\n");
-		display_compressors(stderr, "", "");
-		return FALSE;
+        // CJH: Try to continue anyway
+        return TRUE;
 	}
 
 	/*
@@ -2296,6 +2298,55 @@ int check_compression(struct compressor *comp)
 int read_super(char *source)
 {
 	squashfs_super_block_3 sBlk_3;
+    struct squashfs_generic_super_block generic = { 0 };
+
+	read_fs_bytes(fd, SQUASHFS_START, sizeof(struct squashfs_generic_super_block),
+		&generic);
+    if(swap == -1)
+    {
+        /*
+         * If the major version is greater than or less than the min/max version numbers
+         * or if the least significant bytes of the inode count field is 0, then the
+         * image endianess is probably opposite of the host system.
+         *
+         * Note that these are the only fields besides s_magic that are common among 
+         * all versions of the SquashFS super block structures, and s_magic cannot
+         * be relied on as it is commonly mucked with by vendors.
+         */
+        if(generic.s_major < SQUASHFS_MIN_VERSION ||
+           generic.s_major > SQUASHFS_MAX_VERSION ||
+           (generic.inodes & 0xFF) == 0)
+        {
+            ERROR("SquashFS version [%d.%d] / inode count [%d] suggests a SquashFS image "
+                  "of a different endianess\n", generic.s_major, generic.s_minor, generic.inodes);
+#ifdef FIX_BE
+            swap = 0;
+#else
+			swap = 1;
+#endif
+        }
+        else
+        {
+            ERROR("SquashFS version [%d.%d] / inode count [%d] suggests a SquashFS image "
+                  "of the same endianess\n", generic.s_major, generic.s_minor, generic.inodes);
+#ifdef FIX_BE
+            swap = 1;
+#else
+			swap = 0;
+#endif
+        }
+    }
+
+    // CJH: Warn if SquashFS magic doesn't look correct
+    if(generic.s_magic != SQUASHFS_MAGIC && generic.s_magic != SQUASHFS_MAGIC_SWAP)
+    {
+        ERROR("Non-standard SquashFS Magic: '%.4s'\n", (char *) &generic.s_magic);
+    }
+
+    // CJH: Notify if endianess is different
+    if(swap) {
+        ERROR("Reading a different endian SQUASHFS filesystem on %s\n", source);
+	}
 
 	/*
 	 * Try to read a Squashfs 4 superblock
@@ -2670,11 +2721,9 @@ void *inflator(void *arg)
 			SQUASHFS_COMPRESSED_SIZE_BLOCK(entry->size), block_size,
 			&error);
 
-		if(res == -1)
-			ERROR("%s uncompress failed with error code %d\n",
-				comp->name, error);
-		else
-			memcpy(entry->data, tmp, res);
+        if(res != -1) {
+            memcpy(entry->data, tmp, res);
+		}
 
 		/*
 		 * block has been either successfully decompressed, or an error
@@ -4024,6 +4073,23 @@ static void print_options(FILE *stream, char *name)
 	fprintf(stream, "\t-exc[f] <exclude file>\tsynonym for -exclude-file\n");
 	fprintf(stream, "\t-L\t\t\tsynonym for -follow-symlinks\n");
 	fprintf(stream, "\t-pseudo-file <file>\talternative name for -pf\n");
+	fprintf(stream, "\t-h[elp]\t\t\toutput this options text to stdout\n");
+	// CJH: Added -comp, -be, -le, -major, -minor and lzma options help output
+	fprintf(stream, "\n");
+	fprintf(stream, "\t-LC <value>\t\tSet the lzma-adaptive lc parameter [0-4]\n");
+	fprintf(stream, "\t-LP <value>\t\tSet the lzma-adaptive lp parameter [0-4]\n");
+	fprintf(stream, "\t-PB <value>\t\tSet the lzma-adaptive pb parameter [0-8]\n");
+	fprintf(stream, "\t-dict <value>\t\tSet the lzma-adaptive dictionary size\n");
+	fprintf(stream, "\t-lzma-offset <value>\tSet the lzma-adaptive LZMA data offset\n");
+	fprintf(stream, "\t-major <version>\tManually set the SquashFS major "
+		"version number\n");
+	fprintf(stream, "\t-minor <version>\tManually set the SquashFS minor "
+		"version number\n");
+	fprintf(stream, "\t-be\t\t\tTreat the filesystem as big endian\n");
+	fprintf(stream, "\t-le\t\t\tTreat the filesystem as little endian\n");
+	fprintf(stream, "\t-C[OMP] <decompressor>\tSpecify the "
+		"decompressor to use\n");
+
 	fprintf(stream, "\nDecompressors available:\n");
 	display_compressors(stream, "", "");
 
@@ -4423,9 +4489,85 @@ int parse_options(int argc, char *argv[])
 			}
 			time_opt = TRUE;
 		} else if(strcmp(argv[i], "-full-precision") == 0 ||
-				strcmp(argv[i], "-full") == 0)
+				strcmp(argv[i], "-full") == 0) {
 			full_precision = TRUE;
-		else {
+		}
+        // CJH: Added -comp, -be, -le, -major, -minor options
+        else if(strcmp(argv[i], "-C") == 0 ||
+                strcmp(argv[i], "-COMP") == 0) {
+            if(++i == argc) {
+                fprintf(stderr, "%s: -COMP missing compression option\n",
+                    argv[0]);
+                exit(1);
+            }
+            comp = lookup_compressor(argv[i]);
+        } else if(strcmp(argv[i], "-major") == 0) {
+            if(++i == argc) {
+                fprintf(stderr, "%s: -major missing version option\n",
+                    argv[0]);
+                exit(1);
+            }
+            override.s_major = atoi(argv[i]);
+        } else if(strcmp(argv[i], "-minor") == 0) {
+            if(++i == argc) {
+                fprintf(stderr, "%s: -minor missing version option\n",
+                    argv[0]);
+                exit(1);
+            }
+            override.s_minor = atoi(argv[i]);
+        } else if(strcmp(argv[i], "-LC") == 0) {
+            if(++i == argc) {
+                fprintf(stderr, "%s: -LC missing value option\n",
+                    argv[0]);
+                exit(1);
+            }
+            override.lc.value = atoi(argv[i]);
+            override.lc.set = TRUE;
+        } else if(strcmp(argv[i], "-LP") == 0) {
+            if(++i == argc) {
+                fprintf(stderr, "%s: -LP missing value option\n",
+                    argv[0]);
+                exit(1);
+            }
+            override.lp.value = atoi(argv[i]);
+            override.lp.set = TRUE;
+        } else if(strcmp(argv[i], "-PB") == 0) {
+            if(++i == argc) {
+                fprintf(stderr, "%s: -PB missing value option\n",
+                    argv[0]);
+                exit(1);
+            }
+            override.pb.value = atoi(argv[i]);
+            override.pb.set = TRUE;
+        } else if(strcmp(argv[i], "-dict") == 0) {
+            if(++i == argc) {
+                fprintf(stderr, "%s: -dict missing value option\n",
+                    argv[0]);
+                exit(1);
+            }
+            override.dictionary_size.value = atoi(argv[i]);
+            override.dictionary_size.set = TRUE;
+        } else if(strcmp(argv[i], "-lzma-offset") == 0) {
+            if(++i == argc) {
+                fprintf(stderr, "%s: -lzma-offset missing value option\n",
+                    argv[0]);
+                exit(1);
+            }
+            override.offset.value = atoi(argv[i]);
+            override.offset.set = TRUE;
+        } else if(strcmp(argv[i], "-be") == 0) {
+#if __BYTE_ORDER == __BIG_ENDIAN
+            swap = 0;
+#else
+            swap = 1;
+#endif
+		} else if(strcmp(argv[i], "-le") == 0) {
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+            swap = 0;
+#else
+            swap = 1;
+#endif
+		} else {
 			print_options(stderr, argv[0]);
 			exit(1);
 		}
