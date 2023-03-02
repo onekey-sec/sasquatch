@@ -34,7 +34,7 @@ GZIP_SUPPORT = 1
 # To build install the library and uncomment
 # the XZ_SUPPORT line below.
 #
-#XZ_SUPPORT = 1
+XZ_SUPPORT = 1
 
 
 ############ Building LZO support ##############
@@ -48,7 +48,8 @@ GZIP_SUPPORT = 1
 # To build install the library and uncomment
 # the LZO_SUPPORT line below.
 #
-#LZO_SUPPORT = 1
+LZO_SUPPORT = 1
+#LZO_DIR = /usr/local
 
 
 ########### Building LZ4 support #############
@@ -64,7 +65,7 @@ GZIP_SUPPORT = 1
 # To build install and uncomment
 # the LZ4_SUPPORT line below.
 #
-#LZ4_SUPPORT = 1
+LZ4_SUPPORT = 1
 
 
 ########### Building ZSTD support ############
@@ -80,7 +81,17 @@ GZIP_SUPPORT = 1
 # To build install the library and uncomment
 # the ZSTD_SUPPORT line below.
 #
-#ZSTD_SUPPORT = 1
+
+ZSTD_SUPPORT = 1
+
+#LZMA_XZ_SUPPORT = 1
+LZMA_SUPPORT = 1
+# CJH: Added LZMA_BASE_DIR
+LZMA_BASE_DIR = ./LZMA
+LZMA_DIR = $(LZMA_BASE_DIR)/lzma465
+# CJH: Added these too...
+LZMA_ALT_DIR = $(LZMA_BASE_DIR)/lzmalt
+LZMA_ADAPT_DIR = $(LZMA_BASE_DIR)/lzmadaptive/C/7zip/Compress/LZMA_Lib
 
 
 ######## Specifying default compression ########
@@ -190,13 +201,18 @@ COMPRESSORS += gzip
 endif
 
 ifeq ($(LZMA_SUPPORT),1)
+# CJH: Added -llzmalib
+LIBS += -L$(LZMA_ADAPT_DIR) -llzmalib 
 LZMA_OBJS = $(LZMA_DIR)/C/Alloc.o $(LZMA_DIR)/C/LzFind.o \
 	$(LZMA_DIR)/C/LzmaDec.o $(LZMA_DIR)/C/LzmaEnc.o $(LZMA_DIR)/C/LzmaLib.o
-INCLUDEDIR += -I$(LZMA_DIR)/C
+# CJH: Added LZMA variant directories
+INCLUDEDIR += -I$(LZMA_DIR)/C -I$(LZMA_ALT_DIR) -I$(LZMA_ADAPT_DIR)
 CFLAGS += -DLZMA_SUPPORT
 MKSQUASHFS_OBJS += lzma_wrapper.o $(LZMA_OBJS)
 UNSQUASHFS_OBJS += lzma_wrapper.o $(LZMA_OBJS)
 COMPRESSORS += lzma
+# CJH: Added LZMA_EXTRA_OBJS
+LZMA_EXTRA_OBJS = $(LZMA_ALT_DIR)/*.o
 endif
 
 ifeq ($(LZMA_XZ_SUPPORT),1)
@@ -324,10 +340,11 @@ endif
 CFLAGS += -DVERSION=\"$(VERSION)\" -DDATE=\"$(DATE)\"
 
 .PHONY: all
-all: mksquashfs unsquashfs
+all: sasquatch
 
+# CJH: Added LZMA_EXTRA_OBJS
 mksquashfs: $(MKSQUASHFS_OBJS)
-	$(CC) $(LDFLAGS) $(EXTRA_LDFLAGS) $(MKSQUASHFS_OBJS) $(LIBS) -o $@
+	$(CXX) $(LDFLAGS) $(EXTRA_LDFLAGS) $(LZMA_EXTRA_OBJS) $(MKSQUASHFS_OBJS) $(LIBS) -o $@
 	ln -sf mksquashfs sqfstar
 
 mksquashfs.o: Makefile mksquashfs.c squashfs_fs.h squashfs_swap.h mksquashfs.h \
@@ -373,7 +390,8 @@ tar_xattr.o: tar.h xattr.h
 
 gzip_wrapper.o: gzip_wrapper.c squashfs_fs.h gzip_wrapper.h compressor.h
 
-lzma_wrapper.o: lzma_wrapper.c compressor.h squashfs_fs.h
+# CJH: Added lzmalt, lzmadaptive
+lzma_wrapper.o: lzma_wrapper.c compressor.h squashfs_fs.h lzmalt lzmadaptive
 
 lzma_xz_wrapper.o: lzma_xz_wrapper.c compressor.h squashfs_fs.h
 
@@ -383,9 +401,13 @@ lz4_wrapper.o: lz4_wrapper.c squashfs_fs.h lz4_wrapper.h compressor.h
 
 xz_wrapper.o: xz_wrapper.c squashfs_fs.h xz_wrapper.h compressor.h
 
+# CJH: Added LZMA_EXTRA_OBJS
 unsquashfs: $(UNSQUASHFS_OBJS)
-	$(CC) $(LDFLAGS) $(EXTRA_LDFLAGS) $(UNSQUASHFS_OBJS) $(LIBS) -o $@
+	$(CC) $(LDFLAGS) $(EXTRA_LDFLAGS) $(UNSQUASHFS_OBJS) $(LZMA_EXTRA_OBJS) $(LIBS) -o $@
 	ln -sf unsquashfs sqfscat
+
+sasquatch: $(UNSQUASHFS_OBJS)
+	$(CXX) $(LDFLAGS) $(EXTRA_LDFLAGS) $(LZMA_EXTRA_OBJS) $(UNSQUASHFS_OBJS) $(LIBS) -o $@
 
 unsquashfs.o: unsquashfs.h unsquashfs.c squashfs_fs.h squashfs_swap.h \
 	squashfs_compat.h xattr.h read_fs.h compressor.h unsquashfs_error.h
@@ -411,15 +433,22 @@ unsquashfs_xattr.o: unsquashfs_xattr.c unsquashfs.h squashfs_fs.h xattr.h unsqua
 
 unsquashfs_info.o: unsquashfs.h squashfs_fs.h unsquashfs_error.h
 
+# CJH: Added lzmalt, lzmadaptive
+.PHONY: lzmalt lzmadaptive
+lzmalt:
+	make -C $(LZMA_ALT_DIR)
+lzmadaptive:
+	make -C $(LZMA_ADAPT_DIR)
+
+# CJH: Added lzmalt, lzmadaptive
 .PHONY: clean
 clean:
-	-rm -f *.o mksquashfs unsquashfs sqfstar sqfscat *.1
+	-rm -f *.o sasquatch
+	make -C $(LZMA_ADAPT_DIR) clean
+	make -C $(LZMA_ALT_DIR) clean
 
+# CJH: Added cp sasquatch
 .PHONY: install
-install: mksquashfs unsquashfs
+install: sasquatch
 	mkdir -p $(INSTALL_DIR)
-	cp mksquashfs $(INSTALL_DIR)
-	cp unsquashfs $(INSTALL_DIR)
-	ln -fs unsquashfs $(INSTALL_DIR)/sqfscat
-	ln -fs mksquashfs $(INSTALL_DIR)/sqfstar
-	../generate-manpages/install-manpages.sh $(shell pwd)/.. "$(INSTALL_MANPAGES_DIR)"
+	cp sasquatch $(INSTALL_DIR)

@@ -21,7 +21,7 @@
 
 #include "endian_compat.h"
 
-#if __BYTE_ORDER == __BIG_ENDIAN
+#if __BYTE_ORDER == __BIG_ENDIAN || defined FIX_BE
 void swap_le16(void *src, void *dest)
 {
 	unsigned char *s = src;

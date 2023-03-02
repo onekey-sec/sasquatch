@@ -22,7 +22,7 @@
 
 #include "endian_compat.h"
 
-#if __BYTE_ORDER == __BIG_ENDIAN
+#if __BYTE_ORDER == __BIG_ENDIAN || defined FIX_BE
 extern unsigned int inswap_le16(unsigned short);
 extern unsigned int inswap_le32(unsigned int);
 

@@ -1,0 +1,47 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "sasquatch-v*"
+
+jobs:
+  build_amd64:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build Debian package (AMD64)
+        uses: dawidd6/action-debian-package@v1.4.4
+        with:
+          os_distribution: bullseye
+          cpu_architecture: amd64
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{ github.workspace }}/*.deb
+  build_arm64:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build Debian package (AARCH64)
+        uses: dawidd6/action-debian-package@v1.4.4
+        with:
+          os_distribution: bullseye
+          cpu_architecture: arm64
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{ github.workspace }}/*.deb
+  build_arm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build Debian package (ARM32)
+        uses: dawidd6/action-debian-package@v1.4.4
+        with:
+          os_distribution: bullseye
+          cpu_architecture: arm
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{ github.workspace }}/*.deb

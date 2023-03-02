@@ -1,0 +1,5 @@
+sasquatch/
+debhelper-*-stamp
+sasquatch.debhelper.log
+sasquatch.substvars
+files

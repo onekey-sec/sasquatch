@@ -29,7 +29,7 @@
 
 #include "endian_compat.h"
 
-#if __BYTE_ORDER == __BIG_ENDIAN
+#if __BYTE_ORDER == __BIG_ENDIAN || defined FIX_BE
 #include <stddef.h>
 extern void swap_le16(void *, void *);
 extern void swap_le32(void *, void *);
