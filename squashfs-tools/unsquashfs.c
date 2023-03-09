@@ -2353,17 +2353,20 @@ int read_super(char *source)
 	 */
 	int res = read_super_4(&s_ops);
 
-	if(res != -1)
-		return res;
-	res = read_super_3(source, &s_ops, &sBlk_3);
-	if(res != -1)
-		return res;
-	res = read_super_2(&s_ops, &sBlk_3);
-	if(res != -1)
-		return res;
-	res = read_super_1(&s_ops, &sBlk_3);
-	if(res != -1)
-		return res;
+    if(res == -1) {
+        res = read_super_3(source, &s_ops, &sBlk_3);
+
+        if(res != -1 && sBlk_3.s_major == 2){
+            res = read_super_2(&s_ops, &sBlk_3);
+        }
+        else if (res != -1 && sBlk_3.s_major == 1){
+            res = read_super_1(&s_ops, &sBlk_3);
+        }
+    }
+
+    if(res != -1) {
+        return res;
+    }
 
 	return FALSE;
 }
