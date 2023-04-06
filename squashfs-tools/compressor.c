@@ -78,6 +78,7 @@ extern struct compressor lzma_alt_comp_ops;
 extern struct compressor lzma_wrt_comp_ops;
 extern struct compressor lzma_adaptive_comp_ops;
 
+extern int ignore_errors;
 
 static struct compressor unknown_comp_ops = {
 	0, "unknown"
@@ -173,10 +174,15 @@ int compressor_uncompress(struct compressor *comp, void *dest, void *src, int si
 {
     int i = 0, retval = -1, default_compressor_id = -1;
 
+    int global_ignore_errors = ignore_errors;
+    ignore_errors = 1;
+
     if(detected_compressor_index)
     {
         retval = compressor[detected_compressor_index]->uncompress(dest, src, size, block_size, error);
     }
+
+    ignore_errors = global_ignore_errors;
 
     if(retval < 1 && comp->uncompress)
     {
