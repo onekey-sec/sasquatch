@@ -23,12 +23,22 @@
     in
     {
       overlays.default = final: prev: {
-        sasquatch-le = final.squashfsTools.overrideAttrs (_: {
-          pname = "sasquatch-le";
-          inherit version;
+        sasquatch-le =
+          let
+            inherit (final) lib;
+          in
+          final.squashfsTools.overrideAttrs (_: {
+            pname = "sasquatch-le";
+            inherit version;
 
-          src = ./.;
-        });
+            patches = lib.optionals final.stdenv.isDarwin
+              (final.fetchpatch {
+                url = "https://raw.githubusercontent.com/NixOS/nixpkgs/ed81545df5083a95ddcfbff0c029774ecb0326bd/pkgs/tools/filesystems/squashfs/darwin.patch";
+                hash = "sha256-bSh9srb5WXD4KNCxALywdNMZcYQLFnrAzkTMRBnhXD8=";
+              });
+
+            src = ./.;
+          });
 
         sasquatch-be = final.sasquatch-le.overrideAttrs (super: {
           pname = "sasquatch-be";
