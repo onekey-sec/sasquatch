@@ -40,7 +40,7 @@ int read_ids(int ids, long long start, long long end, unsigned int **id_table)
 	 * The size of the index table (length bytes) should match the
 	 * table start and end points
 	 */
-	if(length != (end - start)) {
+	if(length > (end - start)) {
 		ERROR("read_ids: Bad inode count in super block\n");
 		return FALSE;
 	}
