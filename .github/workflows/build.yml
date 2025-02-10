@@ -25,7 +25,7 @@ jobs:
           os_distribution: bullseye
           cpu_architecture: amd64
       - name: Upload DEB artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           path: ${{ github.workspace }}/*.deb
   build_arm64:
@@ -38,7 +38,7 @@ jobs:
           os_distribution: bullseye
           cpu_architecture: arm64
       - name: Upload DEB artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           path: ${{ github.workspace }}/*.deb
           if-no-files-found: error
@@ -52,7 +52,7 @@ jobs:
           os_distribution: bullseye
           cpu_architecture: arm
       - name: Upload DEB artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           path: ${{ github.workspace }}/*.deb
           if-no-files-found: error
