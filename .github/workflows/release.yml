@@ -16,7 +16,7 @@ jobs:
           os_distribution: bullseye
           cpu_architecture: amd64
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: ${{ github.workspace }}/*.deb
   build_arm64:
@@ -29,7 +29,7 @@ jobs:
           os_distribution: bullseye
           cpu_architecture: arm64
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: ${{ github.workspace }}/*.deb
   build_arm:
@@ -42,6 +42,6 @@ jobs:
           os_distribution: bullseye
           cpu_architecture: arm
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: ${{ github.workspace }}/*.deb
