@@ -20,7 +20,7 @@ jobs:
         with:
           files: ${{ github.workspace }}/*.deb
   build_arm64:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - name: Build Debian package (AARCH64)
@@ -33,7 +33,7 @@ jobs:
         with:
           files: ${{ github.workspace }}/*.deb
   build_arm:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - name: Build Debian package (ARM32)
