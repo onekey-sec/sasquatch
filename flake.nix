@@ -29,7 +29,7 @@
           in
           stdenv.mkDerivation {
             pname = "sasquatch-le";
-            version = "4.5.1";
+            version = "4.6.1";
 
             patches = lib.optionals final.stdenv.isDarwin
               (final.fetchpatch {
