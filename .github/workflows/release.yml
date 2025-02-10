@@ -9,7 +9,7 @@ jobs:
   build_amd64:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Build Debian package (AMD64)
         uses: dawidd6/action-debian-package@v1.4.4
         with:
@@ -22,7 +22,7 @@ jobs:
   build_arm64:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Build Debian package (AARCH64)
         uses: dawidd6/action-debian-package@v1.4.4
         with:
@@ -35,7 +35,7 @@ jobs:
   build_arm:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Build Debian package (ARM32)
         uses: dawidd6/action-debian-package@v1.4.4
         with:
