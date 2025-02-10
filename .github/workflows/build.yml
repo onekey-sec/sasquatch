@@ -20,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Build Debian package (AMD64)
-        uses: dawidd6/action-debian-package@v1.4.4
+        uses: dawidd6/action-debian-package@v1.6.0
         with:
           os_distribution: bullseye
           cpu_architecture: amd64
@@ -33,7 +33,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Build Debian package (AARCH64)
-        uses: dawidd6/action-debian-package@v1.4.4
+        uses: dawidd6/action-debian-package@v1.6.0
         with:
           os_distribution: bullseye
           cpu_architecture: arm64
@@ -47,7 +47,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Build Debian package (ARM32)
-        uses: dawidd6/action-debian-package@v1.4.4
+        uses: dawidd6/action-debian-package@v1.6.0
         with:
           os_distribution: bullseye
           cpu_architecture: arm
