@@ -13,8 +13,10 @@ jobs:
             arch: x86_64-linux
           - os: ubuntu-latest
             arch: aarch64-linux
-          - os: macos-latest
+          - os: macos-14
             arch: x86_64-darwin
+          - os: macos-14
+            arch: aarch64-darwin
     name: Build Nix - ${{ matrix.arch }}.${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     steps:
