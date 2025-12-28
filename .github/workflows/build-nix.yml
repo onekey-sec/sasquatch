@@ -21,9 +21,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - uses: cachix/install-nix-action@v30
+      - uses: cachix/install-nix-action@v31
         with:
-          install_url: https://releases.nixos.org/nix/nix-2.13.3/install
+          install_url: https://releases.nixos.org/nix/nix-2.18.8/install
           extra_nix_config: |
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
       - name: Setup emulation
@@ -33,7 +33,7 @@ jobs:
           sudo apt install -q -y qemu-system-aarch64 qemu-efi-aarch64 binfmt-support qemu-user-static
           mkdir -p ~/.config/nix
           echo "system-features = aarch64-linux arm-linux" | sudo tee -a /etc/nix/nix.conf
-      - uses: cachix/cachix-action@v15
+      - uses: cachix/cachix-action@v16
         with:
           name: unblob
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
