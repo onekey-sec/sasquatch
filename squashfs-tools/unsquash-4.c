@@ -696,8 +696,7 @@ int read_super_4(squashfs_operations **s_ops)
 
 	SQUASHFS_INSWAP_SUPER_BLOCK(&sBlk_4);
 
-	if(sBlk_4.s_magic == SQUASHFS_MAGIC && sBlk_4.s_major == 4 &&
-			sBlk_4.s_minor == 0) {
+	if(sBlk_4.s_major == 4 && sBlk_4.s_minor == 0) {
 
 		// CJH: Update super struct with override values
         if(override.s_major)
