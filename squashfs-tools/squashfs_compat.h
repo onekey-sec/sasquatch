@@ -832,3 +832,9 @@ typedef struct squashfs_fragment_entry_2 squashfs_fragment_entry_2;
 }
 #define SQUASHFS_MEMSET(s, d, n)	memset(s, 0, n);
 #endif
+
+/*
+ * Minor version 76 ('L') indicates a variant of v2 from AVM/Freetz that uses
+ * LZMA file compression instead of gzip.
+ */
+#define SQUASHFS_MINOR_LZMA 76

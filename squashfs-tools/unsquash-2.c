@@ -590,7 +590,7 @@ int read_super_2(squashfs_operations **s_ops, void *s)
 {
 	 squashfs_super_block_3 *sBlk_3 = s;
 
-	if(sBlk_3->s_major != 2 || sBlk_3->s_minor > 1)
+	if(sBlk_3->s_major != 2 || (sBlk_3->s_minor > 1 && sBlk_3->s_minor != SQUASHFS_MINOR_LZMA))
 		return -1;
 
 	sBlk.s.s_magic = sBlk_3->s_magic;
@@ -616,10 +616,14 @@ int read_super_2(squashfs_operations **s_ops, void *s)
 
 	*s_ops = &ops;
 
-	/*
-	 * 2.x filesystems use gzip compression.
+    /*
+	 * 2.x filesystems use gzip compression, unless s_minor == 76 ('L')
+	 * which indicates a AVM/Freetz variant with LZMA compression.
 	 */
-	comp = lookup_compressor("gzip");
+	if(sBlk_3->s_minor == SQUASHFS_MINOR_LZMA)
+		comp = lookup_compressor("lzma");
+	else
+		comp = lookup_compressor("gzip");
 
 	if(sBlk_3->s_minor == 0)
 		needs_sorting = TRUE;
